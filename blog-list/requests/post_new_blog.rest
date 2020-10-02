@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "title" : "placeholder blog post 2",
+    "author" : "Anirudh also",
+    "url" : "www.placeholder.com/blog2",
+    "likes" : 8
+
+}
