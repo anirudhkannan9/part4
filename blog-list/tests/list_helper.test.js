@@ -1,5 +1,6 @@
 const totalLikes = require('../utils/list_helper').totalLikes
 const favouriteBlog = require('../utils/list_helper').favouriteBlog
+const mostBlogs = require('../utils/list_helper').mostBlogs
 
 
 const listWithOneBlog = [
@@ -69,6 +70,15 @@ describe('favouriteBlog', () => {
     const result = favouriteBlog(manyblogs)
     expect(result).toEqual(deconstructed2)
   })
+
+})
+
+describe('mostBlogs', () => {
+  test('mostBlogs1', () => {
+    const result = mostBlogs(manyblogs)
+    expect(result).toEqual({ author: 'Robert C. Martin', blogs: 3 })
+  })
+
 
 })
 
