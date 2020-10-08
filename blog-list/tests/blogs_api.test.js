@@ -99,6 +99,47 @@ describe('posting blogs', () => {
     expect(blogsAtEnd.body[3].likes).toBe(0)
 
   })
+
+  test('if title missing, respond w/ 400 Bad Request', async () => {
+    const newBlog = {
+      author: 'me',
+      url: 'https://newpost.com',
+      likes: 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+
+  })
+
+  test('if url missing, respond w/ 400 Bad Request', async () => {
+    const newBlog = {
+      title: 'testing addition of blog post',
+      author: 'me',
+      likes: 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+
+  })
+
+  test('if title & URL missing, respond w/ 400 Bad Request', async () => {
+    const newBlog = {
+      author: 'me',
+      likes: 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+
+  })
 })
 
 
