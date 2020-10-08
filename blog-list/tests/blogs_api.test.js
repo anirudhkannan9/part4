@@ -38,9 +38,6 @@ beforeEach(async () => {
 describe('getting blogs', () => {
   test('all blogs are returned', async () => {
     const response = await api.get('/api/blogs')
-
-    console.log(response.body)
-
     expect(response.body).toHaveLength(initialBlogs.length)
   })
 
@@ -54,7 +51,6 @@ describe('getting blogs', () => {
   test('Verify that unique identifier property of blogs is called "id"', async () => {
     const response = await api.get('/api/blogs/')
     const first_blog = response.body[0]
-
     expect(first_blog.id).toBeDefined()
   })
 
@@ -83,6 +79,25 @@ describe('posting blogs', () => {
     expect(contents).toContain(
       'testing addition of blog post'
     )
+  })
+
+  test('if "likes" property missing, automatically set to 0', async () => {
+    const newBlog = {
+      title: 'testing addition of blog post',
+      author: 'me',
+      url: 'https://newpost.com'
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await api.get('/api/blogs')
+    expect(blogsAtEnd.body[3].likes).toBeDefined()
+    expect(blogsAtEnd.body[3].likes).toBe(0)
+
   })
 })
 
