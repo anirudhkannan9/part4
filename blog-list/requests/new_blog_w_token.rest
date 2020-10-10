@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFuaXJ1ZGgiLCJpZCI6IjVmODFlZmFlZWU0OTY4MTlmYjUwYTZkNiIsImlhdCI6MTYwMjM2MTQyMH0.L5ePJFyb3EOgpa4ei_-SKKow6c55mRXZE_wRlAw1YTI
+
+{
+    "title": "blog post to see if AUTHORIZATION W TOKENS works",
+    "author": "me again",
+    "url": "https://doesntmatterbro.com",
+    "likes": 13
+}
