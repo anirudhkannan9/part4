@@ -1,13 +1,18 @@
 const blogRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
+
 
 blogRouter.get('/', async(request, response) => {
-  const blogs = await Blog.find({})
+  const blogs = await Blog.find({}).populate('user', { username: 1 })
   response.json(blogs)
 })
 
 blogRouter.post('/', async(request, response) => {
   const body = request.body
+
+  const user = await User.findById(body.userId)
+
 
   if (!body.title || !body.url) {
     response.status(400).send('Please include a title and url.')
@@ -16,12 +21,17 @@ blogRouter.post('/', async(request, response) => {
       title: body.title,
       author: body.author,
       url: body.url,
-      likes: body.likes || 0
+      likes: body.likes === undefined ? 0 : body.likes,
+      user: user._id
     })
 
 
     const savedBlog = await blog.save()
-    response.status(201).json(savedBlog)
+
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+
+    response.json(savedBlog)
 
   }
 

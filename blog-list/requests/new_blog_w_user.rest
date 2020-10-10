@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "title": "blog post 2 see if blogs can be associated w users",
+    "author": "boilerplate auth name",
+    "url": "https://placeholder.com",
+    "likes" : 3,
+    "userId": "5f81efaeee496819fb50a6d6" 
+}
