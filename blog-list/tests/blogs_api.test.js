@@ -205,8 +205,6 @@ describe('only valid users created', () => {
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toHaveLength(usersAtStart.length)
 
-    // const usernames = usersAtEnd.map(u => u.username)
-    // expect(usernames).not.toContain(newUser.username)
   })
 
   test('creation fails w missing pw', async () => {
@@ -319,6 +317,36 @@ describe('only valid users created', () => {
 
   })
 
+})
+
+describe('blogs can only be deleted by users who created them', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    var passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'right', passwordHash })
+
+    await user.save()
+
+    passwordHash = await bcrypt.hash('secret', 10)
+    const user1 = new User({ username: 'wrong', passwordHash })
+
+    await user1.save()
+
+  })
+
+  test('without token', async () => {
+    const users = await User.find({})
+    console.log(users)
+  })
+
+  test('wrong user', async() => {
+    null
+  })
+
+  test('right user', async() => {
+    null
+  })
 })
 
 afterAll(() => {
