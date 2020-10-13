@@ -7,6 +7,7 @@ const api = supertest(app)
 
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const { usersInDb, blogsInDb } = require('./test_helper')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -16,6 +17,12 @@ beforeEach(async () => {
   await blogObject.save()
   blogObject = new Blog(helper.initialBlogs[2])
   await blogObject.save()
+
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const user = new User({ username: 'root', passwordHash })
+
+  await user.save()
+
 })
 
 describe('getting blogs', () => {
@@ -41,17 +48,39 @@ describe('getting blogs', () => {
 
 describe('posting blogs', () => {
   test('succeeds with valid data', async () => {
+    //first login + get token
+    const users = await usersInDb()
+    console.log(users)
+
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    console.log(response.body.token)
+    const token = response.body.token
+
+
+    //THEN create new blog w/ token
     const newBlog = {
-      title: 'testing addition of blog post',
+      title: 'testing addition of blog post, w/ token this time',
       author: 'me',
       url: 'https://newpost.com',
       likes: 3
     }
 
+
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(201)
+      .set({ 'Authorization': `bearer ${token}` })
+      .expect(200)
       .expect('Content-Type', /application\/json/)
 
 
@@ -60,11 +89,31 @@ describe('posting blogs', () => {
 
     const contents = blogsAtEnd.body.map(n => n.title)
     expect(contents).toContain(
-      'testing addition of blog post'
+      'testing addition of blog post, w/ token this time'
     )
   })
 
   test('if "likes" property missing, automatically set to 0', async () => {
+    //first login + get token
+    // const users = await usersInDb()
+    // console.log(users)
+
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    // console.log(response.body.token)
+    const token = response.body.token
+
+
+    //THEN create new blog w/ token
     const newBlog = {
       title: 'testing addition of blog post',
       author: 'me',
@@ -74,7 +123,8 @@ describe('posting blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(201)
+      .set({ 'Authorization': `bearer ${token}` })
+      .expect(200)
       .expect('Content-Type', /application\/json/)
 
     const blogsAtEnd = await api.get('/api/blogs')
@@ -84,6 +134,22 @@ describe('posting blogs', () => {
   })
 
   test('if title missing, respond w/ 400 Bad Request', async () => {
+    //first login + get token
+
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const token = response.body.token
+
+    //THEN create new blog w/ token
     const newBlog = {
       author: 'me',
       url: 'https://newpost.com',
@@ -93,11 +159,27 @@ describe('posting blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set({ 'Authorization': `bearer ${token}` })
       .expect(400)
 
   })
 
   test('if url missing, respond w/ 400 Bad Request', async () => {
+    //first login + get token
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const token = response.body.token
+
+    //THEN create new blog w/ token
     const newBlog = {
       title: 'testing addition of blog post',
       author: 'me',
@@ -107,11 +189,27 @@ describe('posting blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set({ 'Authorization': `bearer ${token}` })
       .expect(400)
 
   })
 
   test('if title & URL missing, respond w/ 400 Bad Request', async () => {
+    //first login + get token
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const token = response.body.token
+
+    //THEN create new blog w token
     const newBlog = {
       author: 'me',
       likes: 3
@@ -120,7 +218,44 @@ describe('posting blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set({ 'Authorization': `bearer ${token}` })
       .expect(400)
+
+  })
+
+  test('adding blog fails w/ 401 Unauthorized if token missing', async () => {
+    //first login + get token
+    const users = await usersInDb()
+    console.log(users)
+
+    const root = {
+      username: 'root',
+      password: 'sekret'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(root)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    console.log(response.body.token)
+    const token = response.body.token
+
+
+    //THEN create new blog w/ token
+    const newBlog = {
+      title: 'testing addition of blog post, w/ token this time',
+      author: 'me',
+      url: 'https://newpost.com',
+      likes: 3
+    }
+
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
 
   })
 })
@@ -319,36 +454,9 @@ describe('only valid users created', () => {
 
 })
 
-describe('blogs can only be deleted by users who created them', () => {
-  beforeEach(async () => {
-    await User.deleteMany({})
 
-    var passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'right', passwordHash })
 
-    await user.save()
-
-    passwordHash = await bcrypt.hash('secret', 10)
-    const user1 = new User({ username: 'wrong', passwordHash })
-
-    await user1.save()
-
-  })
-
-  test('without token', async () => {
-    const users = await User.find({})
-    console.log(users)
-  })
-
-  test('wrong user', async() => {
-    null
-  })
-
-  test('right user', async() => {
-    null
-  })
-})
-
-afterAll(() => {
+afterAll( async () => {
+  await User.deleteMany({})
   mongoose.connection.close()
 })
